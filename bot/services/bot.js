@@ -83,7 +83,9 @@ async function sendWelcomeAndDisciplines(chatId, telegramId, username) {
 
     // Отправляем сообщение с инлайн-кнопками и сохраняем message_id
     const sentMessage = await bot.sendMessage(chatId, 'Выберите дисциплину:', {
-      reply_markup: { inline_keyboard: inlineKeyboard }
+      reply_markup: {
+        inline_keyboard: inlineKeyboard
+      }
     });
 
     // Запоминаем message_id для последующей очистки
