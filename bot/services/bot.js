@@ -78,7 +78,8 @@ async function sendWelcomeAndDisciplines(chatId, telegramId, username) {
     // Формируем инлайн-кнопки с названиями дисциплин
     const inlineKeyboard = disciplines.map(discipline => ([{
       text: discipline.name,
-      callback_data: `discipline_${discipline.disciplineid}`
+      //url: `http://localhost:3000/?disciplineId=${discipline.disciplineid}`
+      url: `http://localhost:3000`
     }]));
 
     // Отправляем сообщение с инлайн-кнопками и сохраняем message_id
@@ -177,11 +178,6 @@ bot.on('message', async (msg) => {
     'Пожалуйста, используйте только команды: /start, /balance, /help или кнопки "Старт" и "Баланс".',
     mainKeyboard
   );
-});
-
-bot.on('callback_query', async (callbackQuery) => {
-  // Пока просто подтверждаем нажатие
-  await bot.answerCallbackQuery(callbackQuery.id);
 });
 
 bot.setMyCommands([
