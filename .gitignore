@@ -3,12 +3,6 @@
 /bot/node_modules
 /bot/.env
 
-# Frontend
-/front/node_modules
-/front/build
-/front/dist
-/front/.env
-
 # Logs
 npm-debug.log*
 yarn-debug.log*
