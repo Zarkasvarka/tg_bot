@@ -4,12 +4,17 @@ const router = express.Router();
 
 router.get('/api/discipline/:id/tournaments', async (req, res) => {
   const disciplineId = req.params.id;
+  console.log('Получен disciplineId:', disciplineId);
+
+  if (!disciplineId || isNaN(Number(disciplineId))) {
+    return res.status(400).json({ error: 'Неверный параметр disciplineId' });
+  }
 
   try {
     // Получаем дисциплину
     const disciplineResult = await pool.query(
       'SELECT disciplineid, name FROM disciplines WHERE disciplineid = $1',
-      [disciplineId]
+      [Number(disciplineId)]
     );
 
     if (disciplineResult.rows.length === 0) {
