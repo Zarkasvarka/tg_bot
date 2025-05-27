@@ -78,8 +78,7 @@ async function sendWelcomeAndDisciplines(chatId, telegramId, username) {
     // Формируем инлайн-кнопки с названиями дисциплин
     const inlineKeyboard = disciplines.map(discipline => ([{
       text: discipline.name,
-      //url: `http://localhost:3000/?disciplineId=${discipline.disciplineid}`
-      url: `http://localhost:3000`
+      web_app: {url: `https://webappkemgu.netlify.app/discipline/${discipline.disciplineid}`}
     }]));
 
     // Отправляем сообщение с инлайн-кнопками и сохраняем message_id
