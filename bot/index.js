@@ -8,9 +8,21 @@ const bot = require('./services/bot');
 const PORT = process.env.PORT;
 const disciplineRouter = require('./routes/discipline');
 
-app.use(disciplineRouter);
 app.use(cors());
+app.use(disciplineRouter);
 app.use(express.json());
+
+app.get('/api/config', (req, res) => {
+  res.json({ apiUrl: process.env.NGROK_URL });
+});
+
+app.listen(PORT, () => {
+  console.log(`Сервер запущен: ${PORT}`);
+});
+
+bot.on('polling_error', (error) => {
+  console.error('Polling error:', error);
+});
 
 // API для получения списка дисциплин из БД
 app.get('/api/disciplines', async (req, res) => {
@@ -34,14 +46,6 @@ app.get('/api/disciplines/:id', async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-});
-
-app.listen(PORT, () => {
-  console.log(`Сервер запущен: ${PORT}`);
-});
-
-bot.on('polling_error', (error) => {
-  console.error('Polling error:', error);
 });
 
 console.log('Бот запущен и готов к работе!');
