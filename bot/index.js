@@ -6,7 +6,9 @@ const app = express();
 const bot = require('./services/bot');
 
 const PORT = process.env.PORT;
+const disciplineRouter = require('./routes/discipline');
 
+app.use(disciplineRouter);
 app.use(cors());
 app.use(express.json());
 
