@@ -1,7 +1,7 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 # Backend
-/bot/node_modules
-/bot/.env
+node_modules
+.env
 
 # Logs
 npm-debug.log*
