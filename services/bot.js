@@ -74,12 +74,15 @@ async function sendWelcomeAndDisciplines(chatId, telegramId, username) {
       await bot.sendMessage(chatId, 'Пока нет доступных дисциплин.');
       return;
     }
-
+    
     // Формируем инлайн-кнопки с названиями дисциплин
-    const inlineKeyboard = disciplines.map(discipline => ([{
-      text: discipline.name,
-      web_app: {url: `https://webappkemgu.netlify.app/discipline/${discipline.disciplineid}`}
-    }]));
+    const inlineKeyboard = disciplines.map(discipline => {
+      console.log('discipline:', discipline);
+      ([{
+        text: discipline.name,
+        web_app: {url: `https://webappkemgu.netlify.app/discipline/${discipline.disciplineid}`}
+      }])}
+    );
 
     // Отправляем сообщение с инлайн-кнопками и сохраняем message_id
     const sentMessage = await bot.sendMessage(chatId, 'Выберите дисциплину:', {
