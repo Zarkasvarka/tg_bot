@@ -165,27 +165,56 @@ app.get('/api/user', async (req, res) => {
   try {
     const initData = req.headers['telegram-initdata'];
     
-    // Валидация данных Telegram (примерная реализация)
-    const user = validateTelegramData(initData, process.env.TELEGRAM_TOKEN);
-    if (!user) return res.status(401).json({ error: 'Invalid auth' });
+    // 1. Проверка наличия initData
+    if (!initData) {
+      return res.status(400).json({ error: 'Требуется авторизация через Telegram' });
+    }
 
-    // Поиск пользователя в БД
-    const result = await pool.query(
-      'SELECT * FROM users WHERE telegramid = $1',
-      [user.id]
-    );
-    
-    if (result.rows.length === 0) return res.status(404).json({ error: 'User not found' });
-    
-    // Форматируем ответ
-    const userData = {
-      ...result.rows[0],
-      avatar_url: `https://t.me/i/userpic/320/${result.rows[0].username}.jpg`
+    // 2. Строгая валидация данных Telegram
+    const telegramUser = validateTelegramData(initData, process.env.TELEGRAM_TOKEN);
+    if (!telegramUser) {
+      return res.status(401).json({ error: 'Невалидные данные авторизации' });
+    }
+
+    // 3. Безопасный запрос к БД
+    const { rows } = await pool.query(`
+      SELECT 
+        userid,
+        telegramid,
+        username,
+        token_balance,
+        registration_date
+      FROM users 
+      WHERE telegramid = $1
+    `, [telegramUser.id]);
+
+    // 4. Проверка существования пользователя
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Пользователь не зарегистрирован' });
+    }
+
+    // 5. Форматирование ответа
+    const dbUser = rows[0];
+    const response = {
+      id: dbUser.userid,
+      telegramId: dbUser.telegramid,
+      username: dbUser.username,
+      balance: dbUser.token_balance,
+      registeredAt: dbUser.registration_date,
+      avatar: dbUser.username 
+        ? `https://t.me/i/userpic/320/${dbUser.username}.jpg`
+        : 'https://example.com/default-avatar.jpg'
     };
-    
-    res.json(userData);
+
+    res.json(response);
+
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    // 6. Логирование и обработка ошибок
+    console.error('[USER API] Ошибка:', error);
+    res.status(500).json({ 
+      error: 'Произошла внутренняя ошибка',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
 
