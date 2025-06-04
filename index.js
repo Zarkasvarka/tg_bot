@@ -28,7 +28,6 @@ app.get('/api/disciplines', async (req, res) => {
 
 // Получить одну дисциплину по id
 app.get('/api/disciplines/:id', async (req, res) => {
-  console.log('Запрос дисциплины с id:', req.params.id);
   try {
     const { id } = req.params;
     const result = await pool.query('SELECT * FROM disciplines WHERE disciplineid = $1', [id]);

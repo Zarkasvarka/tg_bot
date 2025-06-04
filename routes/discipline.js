@@ -4,7 +4,6 @@ const router = express.Router();
 
 router.get('/api/discipline/:id/tournaments', async (req, res) => {
   const disciplineId = req.params.id;
-  console.log('Получен disciplineId:', disciplineId);
 
   if (!disciplineId || isNaN(Number(disciplineId))) {
     return res.status(400).json({ error: 'Неверный параметр disciplineId' });
