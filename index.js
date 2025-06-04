@@ -84,20 +84,6 @@ app.get('/api/tariffs', async (req, res) => {
   }
 });
 
-// Получить пользователя по telegramid (передается в query или в headers)
-app.get('/api/user', async (req, res) => {
-  try {
-    const telegramid = req.query.telegramid || req.headers['x-telegram-id'];
-    if (!telegramid) return res.status(400).json({ error: 'Не передан telegramid' });
-
-    const result = await pool.query('SELECT * FROM users WHERE telegramid = $1', [telegramid]);
-    if (result.rows.length === 0) return res.status(404).json({ error: 'Пользователь не найден' });
-    res.json(result.rows[0]);
-  } catch (error) {
-    res.status(500).json({ error: 'Ошибка сервера' });
-  }
-});
-
 // Получить историю ставок пользователя
 app.get('/api/predictions', async (req, res) => {
   try {
