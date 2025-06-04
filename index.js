@@ -10,6 +10,8 @@ const PORT = process.env.PORT || 5000;
 // CORS
 app.use(cors({
   origin: 'https://webappkemgu.netlify.app',
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Telegram-InitData', 'Content-Type'],
   credentials: true
 }));
 app.use(express.json());
@@ -203,7 +205,7 @@ app.get('/api/user', async (req, res) => {
       registeredAt: dbUser.registration_date,
       avatar: dbUser.username 
         ? `https://t.me/i/userpic/320/${dbUser.username}.jpg`
-        : 'https://example.com/default-avatar.jpg'
+        : 'https://t.me/i/userpic/320/Amaizek.jpg'
     };
 
     res.json(response);

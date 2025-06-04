@@ -7,6 +7,7 @@ const crypto = require('crypto');
  * @returns {object|null} - объект user, если всё ок, иначе null
  */
 function validateTelegramData(initData, botToken) {
+  console.log('InitData (back > utils > tA.js):', initData);
   if (!initData) return null;
   try {
     const params = new URLSearchParams(initData);
