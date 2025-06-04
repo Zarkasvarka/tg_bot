@@ -1,13 +1,6 @@
 const crypto = require('crypto');
 
-/**
- * Валидация initData по документации Telegram
- * @param {string} initData - строка initData из Telegram.WebApp.initData
- * @param {string} botToken - токен твоего бота
- * @returns {object|null} - объект user, если всё ок, иначе null
- */
 function validateTelegramData(initData, botToken) {
-  console.log('InitData (back > utils > tA.js):', initData);
   if (!initData) return null;
   try {
     const params = new URLSearchParams(initData);

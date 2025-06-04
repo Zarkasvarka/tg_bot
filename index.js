@@ -10,10 +10,11 @@ const PORT = process.env.PORT || 5000;
 // CORS
 app.use(cors({
   origin: 'https://webappkemgu.netlify.app',
-  methods: ['GET', 'POST'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Telegram-InitData', 'Content-Type'],
   credentials: true
 }));
+
 app.use(express.json());
 
 // --- Эндпоинты для фронта --- //
@@ -84,23 +85,66 @@ app.get('/api/tariffs', async (req, res) => {
   }
 });
 
-// Получить историю ставок пользователя
+// Получить историю ставок (GET)
 app.get('/api/predictions', async (req, res) => {
   try {
-    const telegramid = req.query.telegramid || req.headers['x-telegram-id'];
-    if (!telegramid) return res.status(400).json({ error: 'Не передан telegramid' });
+    const initData = req.headers['telegram-initdata'];
+    const user = validateTelegramData(initData, process.env.TELEGRAM_TOKEN);
+    if (!user) return res.status(401).json({ error: 'Invalid auth' });
 
-    // Получаем uuid пользователя
-    const userRes = await pool.query('SELECT userid FROM users WHERE telegramid = $1', [telegramid]);
+    const userRes = await pool.query('SELECT userid FROM users WHERE telegramid = $1', [user.id]);
     if (userRes.rows.length === 0) return res.status(404).json({ error: 'Пользователь не найден' });
 
-    const userid = userRes.rows[0].userid;
-    const result = await pool.query('SELECT * FROM predictions WHERE userid = $1 ORDER BY prediction_date DESC', [userid]);
+    const result = await pool.query(
+      'SELECT * FROM predictions WHERE userid = $1 ORDER BY prediction_date DESC', 
+      [userRes.rows[0].userid]
+    );
     res.json(result.rows);
   } catch (error) {
     res.status(500).json({ error: 'Ошибка сервера' });
   }
 });
+
+// Создать ставку (POST)
+app.post('/api/predictions', async (req, res) => {
+  try {
+    const initData = req.headers['telegram-initdata'];
+    const user = validateTelegramData(initData, process.env.TELEGRAM_TOKEN);
+    if (!user) return res.status(401).json({ error: 'Invalid auth' });
+
+    const { matchid, bet_amount, selected_team, coefficient_snapshot } = req.body;
+    if (!matchid || !bet_amount || !selected_team || !coefficient_snapshot) {
+      return res.status(400).json({ error: 'Не все поля заполнены' });
+    }
+
+    const userRes = await pool.query(
+      'SELECT userid, token_balance FROM users WHERE telegramid = $1', 
+      [user.id]
+    );
+    if (userRes.rows.length === 0) return res.status(404).json({ error: 'Пользователь не найден' });
+
+    if (bet_amount > userRes.rows[0].token_balance) {
+      return res.status(400).json({ error: 'Недостаточно средств' });
+    }
+
+    await pool.query(
+      `INSERT INTO predictions 
+        (userid, matchid, bet_amount, selected_team, coefficient_snapshot, status) 
+        VALUES ($1, $2, $3, $4, $5, 'pending')`,
+      [userRes.rows[0].userid, matchid, bet_amount, selected_team, coefficient_snapshot]
+    );
+
+    await pool.query(
+      'UPDATE users SET token_balance = token_balance - $1 WHERE userid = $2',
+      [bet_amount, userRes.rows[0].userid]
+    );
+
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: 'Ошибка сервера' });
+  }
+});
+
 
 // Получить историю транзакций пользователя
 app.get('/api/transactions', async (req, res) => {
@@ -115,34 +159,6 @@ app.get('/api/transactions', async (req, res) => {
     const userid = userRes.rows[0].userid;
     const result = await pool.query('SELECT * FROM transactions WHERE userid = $1 ORDER BY date DESC', [userid]);
     res.json(result.rows);
-  } catch (error) {
-    res.status(500).json({ error: 'Ошибка сервера' });
-  }
-});
-
-// --- Эндпоинт для создания ставки ---
-app.post('/api/predictions', async (req, res) => {
-  try {
-    const { telegramid, matchid, bet_amount, selected_team, coefficient_snapshot } = req.body;
-    if (!telegramid || !matchid || !bet_amount || !selected_team || !coefficient_snapshot)
-      return res.status(400).json({ error: 'Не все поля заполнены' });
-
-    // Получаем uuid и баланс пользователя
-    const userRes = await pool.query('SELECT userid, token_balance FROM users WHERE telegramid = $1', [telegramid]);
-    if (userRes.rows.length === 0) return res.status(404).json({ error: 'Пользователь не найден' });
-    const userid = userRes.rows[0].userid;
-    const balance = parseFloat(userRes.rows[0].token_balance);
-
-    if (bet_amount > balance) return res.status(400).json({ error: 'Недостаточно средств' });
-
-    // Сохраняем ставку
-    await pool.query(
-      'INSERT INTO predictions (userid, matchid, bet_amount, selected_team, coefficient_snapshot, status, prediction_date) VALUES ($1, $2, $3, $4, $5, $6, NOW())',
-      [userid, matchid, bet_amount, selected_team, coefficient_snapshot, 'pending']
-    );
-    // Обновляем баланс
-    await pool.query('UPDATE users SET token_balance = token_balance - $1 WHERE userid = $2', [bet_amount, userid]);
-    res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: 'Ошибка сервера' });
   }
