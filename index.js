@@ -109,8 +109,12 @@ app.get('/api/predictions', async (req, res) => {
 app.post('/api/predictions', async (req, res) => {
   try {
     const initData = req.headers['telegram-initdata'];
+    console.log('InitData received:', initData); // Логируем входящие данные
     const user = validateTelegramData(initData, process.env.TELEGRAM_TOKEN);
-    if (!user) return res.status(401).json({ error: 'Invalid auth' });
+    if (!user) {
+      console.error('Validation failed');
+      return res.status(401).json({ error: 'Invalid auth' });
+    }
 
     const { matchid, bet_amount, selected_team, coefficient_snapshot } = req.body;
     if (!matchid || !bet_amount || !selected_team || !coefficient_snapshot) {
@@ -141,7 +145,8 @@ app.post('/api/predictions', async (req, res) => {
 
     res.json({ success: true });
   } catch (error) {
-    res.status(500).json({ error: 'Ошибка сервера' });
+    console.error('Global error:', error);
+    res.status(500).json({ error: 'Internal error' });
   }
 });
 
