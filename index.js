@@ -164,20 +164,31 @@ app.post('/api/predictions', async (req, res) => {
 });
 
 
-// Получить историю транзакций пользователя
+// Получить историю транзакций
 app.get('/api/transactions', async (req, res) => {
   try {
-    const telegramid = req.query.telegramid || req.headers['x-telegram-id'];
-    if (!telegramid) return res.status(400).json({ error: 'Не передан telegramid' });
+    const initData = req.headers['telegram-initdata'];
+    const user = validateTelegramData(initData, process.env.TELEGRAM_TOKEN);
+    
+    if (!user) return res.status(401).json({ error: 'Invalid auth' });
 
-    // Получаем uuid пользователя
-    const userRes = await pool.query('SELECT userid FROM users WHERE telegramid = $1', [telegramid]);
-    if (userRes.rows.length === 0) return res.status(404).json({ error: 'Пользователь не найден' });
+    const { rows: userRows } = await pool.query(
+      'SELECT userid FROM users WHERE telegramid = $1', 
+      [user.id]
+    );
+    
+    if (userRows.length === 0) {
+      return res.status(404).json({ error: 'Пользователь не найден' });
+    }
 
-    const userid = userRes.rows[0].userid;
-    const result = await pool.query('SELECT * FROM transactions WHERE userid = $1 ORDER BY date DESC', [userid]);
-    res.json(result.rows);
+    const { rows: transactionRows } = await pool.query(
+      'SELECT * FROM transactions WHERE userid = $1 ORDER BY date DESC',
+      [userRows[0].userid]
+    );
+
+    res.json(transactionRows);
   } catch (error) {
+    console.error('Transactions error:', error);
     res.status(500).json({ error: 'Ошибка сервера' });
   }
 });
