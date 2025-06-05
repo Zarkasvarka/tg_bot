@@ -13,7 +13,7 @@ function validateTelegramData(initData, botToken) {
     // Сортируем параметры по алфавиту и формируем строку проверки
     const dataCheckString = Array.from(params.entries())
       .sort(([a], [b]) => a.localeCompare(b))
-      .map(([k, v]) => `${k}=${v}`)
+      .map(([k, v]) => `${k}=${decodeURIComponent(v)}`) // Декодируем значение!
       .join('\n');
 
     // Формируем секретный ключ

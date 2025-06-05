@@ -111,6 +111,8 @@ app.post('/api/predictions', async (req, res) => {
     const initData = req.headers['telegram-initdata'];
     console.log('[POST /predictions] InitData received');
     console.log('InitData received:', initData); // Логируем входящие данные
+    console.log('Request headers:', req.headers);
+    console.log('Request body:', req.body);
     const user = validateTelegramData(initData, process.env.TELEGRAM_TOKEN);
     if (!user) {
       console.error('[POST /predictions] Validation failed');
