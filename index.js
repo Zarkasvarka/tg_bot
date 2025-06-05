@@ -116,13 +116,6 @@ app.post('/api/predictions', async (req, res) => {
       return res.status(401).json({ error: 'Invalid auth' });
     }
 
-    // Проверка наличия команды в коэффициентах
-    const match = await pool.query('SELECT coefficients FROM matches WHERE matchid = $1', [matchid]);
-    if (!match.rows[0].coefficients[selected_team]) {
-      console.error('Invalid team for coefficient:', selected_team);
-      return res.status(400).json({ error: 'Неверная команда' });
-    }
-
     const { rows } = await pool.query('SELECT userid, token_balance FROM users WHERE telegramid = $1', [user.id]);
     if (rows.length === 0) {
       console.error('[POST /predictions] User not found in DB');
@@ -134,6 +127,13 @@ app.post('/api/predictions', async (req, res) => {
     const { matchid, bet_amount, selected_team, coefficient_snapshot } = req.body;
     if (!matchid || !bet_amount || !selected_team || !coefficient_snapshot) {
       return res.status(400).json({ error: 'Не все поля заполнены' });
+    }
+
+    // Проверка наличия команды в коэффициентах
+    const match = await pool.query('SELECT coefficients FROM matches WHERE matchid = $1', [matchid]);
+    if (!match.rows[0].coefficients[selected_team]) {
+      console.error('Invalid team for coefficient:', selected_team);
+      return res.status(400).json({ error: 'Неверная команда' });
     }
 
     const userRes = await pool.query(
