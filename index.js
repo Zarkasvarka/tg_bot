@@ -109,9 +109,6 @@ app.get('/api/predictions', async (req, res) => {
 app.post('/api/predictions', async (req, res) => {
   try {
     const initData = req.headers['telegram-initdata'];
-    console.log('[POST /predictions] InitData received');
-    console.log('InitData received:', initData); // Логируем входящие данные
-    console.log('Request headers:', req.headers);
     console.log('Request body:', req.body);
     const user = validateTelegramData(initData, process.env.TELEGRAM_TOKEN);
     if (!user) {
@@ -119,7 +116,12 @@ app.post('/api/predictions', async (req, res) => {
       return res.status(401).json({ error: 'Invalid auth' });
     }
 
-    console.log('[POST /predictions] User validated:', user.id);
+    // Проверка наличия команды в коэффициентах
+    const match = await pool.query('SELECT coefficients FROM matches WHERE matchid = $1', [matchid]);
+    if (!match.rows[0].coefficients[selected_team]) {
+      console.error('Invalid team for coefficient:', selected_team);
+      return res.status(400).json({ error: 'Неверная команда' });
+    }
 
     const { rows } = await pool.query('SELECT userid, token_balance FROM users WHERE telegramid = $1', [user.id]);
     if (rows.length === 0) {
@@ -159,7 +161,7 @@ app.post('/api/predictions', async (req, res) => {
     res.json({ success: true });
   } catch (error) {
     console.error('[POST /predictions] Error:', error);
-    res.status(500).json({ error: 'Internal error' });
+    res.status(500).json({ error: error.message });
   }
 });
 
