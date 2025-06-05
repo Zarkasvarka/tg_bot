@@ -146,8 +146,8 @@ app.post('/api/predictions', async (req, res) => {
 
     await pool.query(
       `INSERT INTO predictions 
-        (userid, matchid, bet_amount, selected_team, coefficient_snapshot, status) 
-        VALUES ($1, $2, $3, $4, $5, 'pending')`,
+        (userid, matchid, bet_amount, selected_team, coefficient_snapshot, status, prediction_date) 
+        VALUES ($1, $2, $3, $4, $5, 'pending', NOW())`,
       [userRes.rows[0].userid, matchid, bet_amount, selected_team, coefficient_snapshot]
     );
 
