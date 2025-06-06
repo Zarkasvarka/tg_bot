@@ -160,7 +160,7 @@ app.post('/api/predictions', async (req, res) => {
 
     res.json({ success: true });
   } catch (error) {
-    console.error('[POST /predictions] Error:', error);
+    console.log('[POST /predictions] Error:', error);
     res.status(500).json({ error: error.message });
   }
 });
