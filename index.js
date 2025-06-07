@@ -161,7 +161,7 @@ app.post('/api/predictions', async (req, res) => {
     res.json({ success: true, newBalance: userRes.rows[0].token_balance - bet_amount});
   } catch (error) {
     console.log('[POST /predictions] Error:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "Какая-то ошибка" });
   }
 });
 
