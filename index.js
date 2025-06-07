@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 5000;
 // CORS
 app.use(cors({
   origin: 'https://webappkemgu.netlify.app',
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Telegram-InitData', 'Content-Type'],
   credentials: true
 }));
