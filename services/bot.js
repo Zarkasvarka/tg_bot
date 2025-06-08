@@ -46,7 +46,6 @@ async function clearPreviousInlineKeyboards(chatId) {
         message_id: messageId,
       });
     } catch (e) {
-      // Игнорируем ошибки (например, если сообщение удалено)
     }
   }
 
@@ -67,7 +66,7 @@ async function sendWelcomeAndDisciplines(chatId, telegramId, username) {
     // Очистка предыдущих инлайн-кнопок
     await clearPreviousInlineKeyboards(chatId);
 
-    // Получаем дисциплины из базы
+    // Получение дисциплины из базы
     const disciplines = await getDisciplines();
 
     if (disciplines.length === 0) {
@@ -75,7 +74,7 @@ async function sendWelcomeAndDisciplines(chatId, telegramId, username) {
       return;
     }
     
-    // Формируем инлайн-кнопки с названиями дисциплин
+    // Формирование инлайн-кнопки с названиями дисциплин
     const inlineKeyboard = disciplines.map(discipline => {
       return [{
         text: discipline.name,
@@ -83,14 +82,14 @@ async function sendWelcomeAndDisciplines(chatId, telegramId, username) {
       }];
     });
 
-    // Отправляем сообщение с инлайн-кнопками и сохраняем message_id
+    // Отправка сообщения с инлайн-кнопками и сохранение message_id
     const sentMessage = await bot.sendMessage(chatId, 'Выберите дисциплину:', {
       reply_markup: {
         inline_keyboard: inlineKeyboard
       }
     });
 
-    // Запоминаем message_id для последующей очистки
+    // message_id для последующей очистки
     const messageIds = inlineMessagesMap.get(chatId) || [];
     messageIds.push(sentMessage.message_id);
     inlineMessagesMap.set(chatId, messageIds);
@@ -172,7 +171,6 @@ bot.on('message', async (msg) => {
     return;
   }
 
-  // Игнорируем команды — они обрабатываются отдельно
   if (text.startsWith('/')) return;
 
   await bot.sendMessage(chatId,

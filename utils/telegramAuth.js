@@ -10,18 +10,15 @@ function validateTelegramData(initData, botToken) {
     console.log('Extracted hash:', hash);
     params.delete('hash');
 
-    // Сортируем параметры по алфавиту и формируем строку проверки
     const dataCheckString = Array.from(params.entries())
       .sort(([a], [b]) => a.localeCompare(b))
-      .map(([k, v]) => `${k}=${decodeURIComponent(v)}`) // Декодируем значение!
+      .map(([k, v]) => `${k}=${decodeURIComponent(v)}`)
       .join('\n');
 
-    // Формируем секретный ключ
     const secretKey = crypto.createHmac('sha256', 'WebAppData')
       .update(botToken)
       .digest();
 
-    // Вычисляем хэш
     const computedHash = crypto.createHmac('sha256', secretKey)
       .update(dataCheckString)
       .digest('hex');

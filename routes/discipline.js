@@ -28,7 +28,7 @@ router.get('/api/discipline/:id/tournaments', async (req, res) => {
     );
     const tournaments = tournamentsResult.rows;
 
-    // Получаем матчи для всех турниров
+    // Матчи для всех турниров
     const tournamentIds = tournaments.map(t => t.tournamentid);
     let matches = [];
     if (tournamentIds.length > 0) {
@@ -39,7 +39,7 @@ router.get('/api/discipline/:id/tournaments', async (req, res) => {
       matches = matchesResult.rows;
     }
 
-    // Группируем матчи по турнирам
+    // Группировка матчей по турнирам
     const tournamentsWithMatches = tournaments.map(tournament => ({
       ...tournament,
       matches: matches.filter(m => m.tournamentid === tournament.tournamentid)

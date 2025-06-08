@@ -200,18 +200,15 @@ app.get('/api/user', async (req, res) => {
   try {
     const initData = req.headers['telegram-initdata'];
     
-    // 1. Проверка наличия initData
     if (!initData) {
       return res.status(400).json({ error: 'Требуется авторизация через Telegram' });
     }
 
-    // 2. Строгая валидация данных Telegram
     const telegramUser = validateTelegramData(initData, process.env.TELEGRAM_TOKEN);
     if (!telegramUser) {
       return res.status(401).json({ error: 'Невалидные данные авторизации' });
     }
 
-    // 3. Безопасный запрос к БД
     const { rows } = await pool.query(`
       SELECT 
         userid,
@@ -223,12 +220,10 @@ app.get('/api/user', async (req, res) => {
       WHERE telegramid = $1
     `, [telegramUser.id]);
 
-    // 4. Проверка существования пользователя
     if (rows.length === 0) {
       return res.status(404).json({ error: 'Пользователь не зарегистрирован' });
     }
 
-    // 5. Форматирование ответа
     const dbUser = rows[0];
     const response = {
       id: dbUser.userid,
@@ -244,7 +239,6 @@ app.get('/api/user', async (req, res) => {
     res.json(response);
 
   } catch (error) {
-    // 6. Логирование и обработка ошибок
     console.error('[USER API] Ошибка:', error);
     res.status(500).json({ 
       error: 'Произошла внутренняя ошибка',
